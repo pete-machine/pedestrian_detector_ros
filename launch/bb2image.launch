@@ -1,0 +1,10 @@
+<launch>
+	<node type="bb2image.py" name="image2bbPed" pkg="image_inverse_sensor_model" respawn="true" output="screen">
+		<param name="topicInName" value="/ped/BBox/Logitech_webcam/" />
+		<param name="image_width" value="640" />
+		<param name="image_height" value="360" />
+		<param name="objectType_unknown" value="False" />
+		<param name="objectType_vehicle" value="False" />
+		<param name="objectType_human" value="True" />
+	</node>
+</launch>
