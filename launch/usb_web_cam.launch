@@ -1,4 +1,10 @@
 <launch>	
+
+	<node name="image_raw" pkg="image_view" type="image_view" respawn="false" output="screen">
+		<remap from="image" to="/Logitech_webcam/image_raw"/>
+		<param name="autosize" value="false" />
+	</node>
+
 	<!-- Makes pedestrian detector node. Change between the good and the bad detector by changing the model dir. -->
 	<node type="pedestrian_detector_node" name="ped" pkg="pedestrian_detector" respawn="true" output="screen">
 		<param name="model_dir" value="$(find pedestrian_detector)/pedmodels/LdcfInriaDetector.mat" />
