@@ -185,7 +185,7 @@ public:
 			bboxMsg.data.push_back(bbs[iBbs].width3/float(image.cols));
 			bboxMsg.data.push_back(bbs[iBbs].height4/float(image.rows));
 			bboxMsg.data.push_back(fmin(bbs[iBbs].score5/200.0,1));
-			bboxMsg.data.push_back(2); // Humans are given the class 2.
+			bboxMsg.data.push_back(0); // Humans are given the class 0.
 			//bbMsg.data.push_back(bbs[iBbs].)
 		}
 
