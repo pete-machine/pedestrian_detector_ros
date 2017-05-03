@@ -1,5 +1,5 @@
 <launch>	
-	<node name="image_raw" pkg="image_view" type="image_view" respawn="false" output="screen">
+	<node name="image_raw_ped" pkg="image_view" type="image_view" respawn="false" output="screen">
 		<remap from="image" to="/Multisense/left/image_rect_color"/>
 		<param name="autosize" value="false" />
 	</node>
