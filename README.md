@@ -21,6 +21,7 @@ Delete the installation folder matio-X.Y.Z by "rm -R matio-X.Y.Z"
 	
 	tar zxf matio-X.Y.Z.tar.gz
     cd matio-X.Y.Z
+    chmod +x ./configure
     ./configure --without-hdf5
     make
 	sudo make install
