@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>pedestrian_detector</name>
+  <name>pedestrian_detector_ros</name>
   <version>0.0.0</version>
   <description>The pedestrian_detector package</description>
 
@@ -41,9 +41,9 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>sensor_msgs</build_depend>
+  <build_depend>boundingbox_msgs</build_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>sensor_msgs</run_depend>
+  <run_depend>boundingbox_msgs</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
