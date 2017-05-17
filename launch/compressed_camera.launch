@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 	<!-- Uncompressing logitech cam -->
 	<node name="republish" pkg="image_transport" type="republish" args="compressed in:=/Logitech_webcam/image_raw _image_transport:=compressed raw out:=/Logitech_webcam/image_raw" respawn="false" output="screen">
@@ -9,8 +10,9 @@
 	</node>
 
 	<!-- Makes pedestrian detector node. Change between the good and the bad detector by changing the model dir. -->
-	<node type="pedestrian_detector_node" name="ped" pkg="pedestrian_detector" respawn="true" output="screen">
-		<param name="model_dir" value="$(find pedestrian_detector)/pedmodels/LdcfInriaDetector.mat" />
+	<node type="pedestrian_detector_node" name="ped" pkg="pedestrian_detector_ros" respawn="true" output="screen">
+		<param name="model_dir" value="$(find pedestrian_detector_ros)/pedmodels/LdcfInriaDetector.mat" />
+
 		<!--LdcfInriaDetector.mat or  AcfInriaDetector.mat /-->
 		<param name="imageResize" value="0.75" />
 		<param name="cameraHeight" value="0.27" />

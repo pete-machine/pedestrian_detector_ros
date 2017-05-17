@@ -29,6 +29,10 @@
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <std_msgs/MultiArrayLayout.h>
+
+#include <boundingbox_msgs/Boundingboxes.h>
+#include <boundingbox_msgs/Boundingbox.h>
+
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
 #include <cv_bridge/cv_bridge.h>
@@ -97,26 +101,31 @@ public:
 		nh.param<double>("cameraHeight",cameraHeight,1.9);
 		nh.param<double>("imageResize",imageResize,0.5);
 		nh.param<std::string>("topic_name",topic_name,"/usb_cam/image_raw");
+		nh.param<std::string>("topic_bbox_out",topic_bbox_out,"/bboxesOut");
+		nh.param<std::string>("topic_vizualize_image",topic_vizualize_image,"imageWithBBox");
 		nh.param<std::string>("model_dir",model_dir,"model");
-		vector<string> strParts;
-		boost::split(strParts,topic_name,boost::is_any_of("/"));
+
+		//vector<string> strParts;
+		//boost::split(strParts,topic_name,boost::is_any_of("/"));
 		//ROS_ERROR("%s\n",model_dir.c_str());
 		//cam_pub = it.advertiseCamera("imageWithBBox", 1);
-		cam_pub = it.advertise("imageWithBBox", 1);
+		cam_pub = it.advertise(topic_vizualize_image, 1);
 
 
 		//ROS_INFO("Estimating human distance using a camera height of %fm and angle of %fdegrees",cameraHeight,angleTiltDegrees);
 		//ROS_ERROR("Estimating human distance using a camera height of %fm and angle of %fdegrees",cameraHeight,angleTiltDegrees);
 		//cinfor_ = boost::shared_ptr<camera_info_manager::CameraInfoManager>(new camera_info_manager::CameraInfoManager(nh, "test", ""));
 
-		array_pub = nh.advertise<std_msgs::Float64MultiArray>("DistanceAngle", 1);
+		//array_pub = nh.advertise<std_msgs::Float64MultiArray>("DistanceAngle", 1);
 
-		vector<string> outputTopicTmp;
-		outputTopicTmp.push_back("BBox");
-		outputTopicTmp.push_back(strParts[1]);
-		array_pub2 = nh.advertise<std_msgs::Float64MultiArray>(boost::algorithm::join(outputTopicTmp,"/"), 1);
+		//vector<string> outputTopicTmp;
+		//outputTopicTmp.push_back("BBox");
+		//outputTopicTmp.push_back(strParts[1]);
+		//array_pub2 = nh.advertise<std_msgs::Float64MultiArray>(boost::algorithm::join(outputTopicTmp,"/"), 1);
+
+
+		pub_bb = nh.advertise<boundingbox_msgs::Boundingboxes>(topic_bbox_out.c_str(), 1);
 		vis_pub = nh.advertise<visualization_msgs::Marker>( "/PedestrianMarker", 0 );
-		//cam_sub = it.subscribeCamera(topic_name.c_str(), 1, &MyNode::onImage, this);
 		cam_sub = it.subscribe(topic_name.c_str(), 1, &MyNode::onImage,this);
 		
 		//cam_sub = it.subscribe(topic_name.c_str(), 1, &MyNode::onImage);
@@ -168,11 +177,32 @@ public:
 		cv::Mat img = showBB(bbs, image, 0);
 
 
+
+		// Using a self-defined message type
+		boundingbox_msgs::Boundingboxes msgObstacles;
+		msgObstacles.header = msg->header;
+		msgObstacles.boundingboxes.clear();
+		boundingbox_msgs::Boundingbox tmpMsgObstacle;
+
+		for (int iBbs = 0; iBbs < bbs.size(); ++iBbs) {
+			tmpMsgObstacle.x = bbs[iBbs].x1/float(img.cols); 
+			tmpMsgObstacle.y = bbs[iBbs].y2/float(img.rows);
+			tmpMsgObstacle.w = bbs[iBbs].width3/float(img.cols);
+			tmpMsgObstacle.h = bbs[iBbs].height4/float(img.rows);
+			tmpMsgObstacle.prob = fmin(bbs[iBbs].score5/200.0,1);
+			tmpMsgObstacle.objectType = int(0); // Humans are given the class 0.
+
+			// Append obstacle. 
+			msgObstacles.boundingboxes.push_back(tmpMsgObstacle); 
+		}
+		pub_bb.publish(msgObstacles);
+
+
 		//sensor_msgs::CameraInfoPtr cc(new sensor_msgs::CameraInfo(cinfor_->getCameraInfo()));
 		sensor_msgs::ImagePtr msg_out = cv_bridge::CvImage(std_msgs::Header(),"bgr8", img).toImageMsg();
 		msg_out->header.stamp = ros::Time::now();
 
-		std_msgs::Float64MultiArray bbMsg;
+		/*std_msgs::Float64MultiArray bbMsg;
 		std_msgs::Float64MultiArray bboxMsg;
 		bbMsg.data.clear();
 		bboxMsg.data.clear();
@@ -186,7 +216,6 @@ public:
 			bboxMsg.data.push_back(bbs[iBbs].height4/float(image.rows));
 			bboxMsg.data.push_back(fmin(bbs[iBbs].score5/200.0,1));
 			bboxMsg.data.push_back(0); // Humans are given the class 0.
-			//bbMsg.data.push_back(bbs[iBbs].)
 		}
 
 		// Creating visual marker
@@ -217,14 +246,16 @@ public:
 			marker.pose.position.y = bbs[iBbs].distance*sin(bbs[iBbs].angle);
 			vis_pub.publish(marker);	
 		}
+
 		if(bbs.size() == 0) {
 			marker.color.a = 0.0;
 			vis_pub.publish(marker);	
 		}
 		//cam_pub.publish(msg_out, cc);
-		cam_pub.publish(msg_out);
 		array_pub.publish(bbMsg);
 		array_pub2.publish(bboxMsg);
+		*/
+		cam_pub.publish(msg_out);
 
 	}
 private:
@@ -232,17 +263,18 @@ private:
 	double imageResize;
 	std::string model_dir;
 	std::string topic_name;
+	std::string topic_bbox_out;
+	std::string topic_vizualize_image;
 	cv::Mat image;
 	std::vector<bbType> bbs;
 	ros::NodeHandle nh;
 	image_transport::ImageTransport it;
-	//image_transport::CameraPublisher cam_pub;
-	//image_transport::CameraSubscriber cam_sub;
 	image_transport::Publisher cam_pub;
 	image_transport::Subscriber cam_sub;
-	//boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfor_;
-	ros::Publisher array_pub;
-	ros::Publisher array_pub2;
+
+	ros::Publisher pub_bb;
+	//ros::Publisher array_pub;
+	//ros::Publisher array_pub2;
 	ros::Publisher vis_pub;
 	PedestrianDetector* oPedDetector;
 
@@ -251,139 +283,9 @@ private:
 int main(int argc, char** argv) {
 
 	ros::init(argc, argv, "pede");
-
 	MyNode node;
 
 	ros::spin();
-//
-//	ros::NodeHandle nh("~");
-//
-//	image_transport::ImageTransport it(nh);
-//
-//	image_transport::CameraPublisher cam_pub = it.advertiseCamera("processed",
-//			1);
-//
-//	boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfor_(
-//			new camera_info_manager::CameraInfoManager(nh, "test", ""));
-//
-//	ros::Publisher array_pub = nh.advertise<std_msgs::Float64MultiArray>(
-//			"array", 10);
-//
-//	string dirImage = "pedmodels/InriaTest.png";
-//	//string dirImage = "pedmodels/KimTest.jpg";
-//	//string dirImage = "pedmodels/MarkTest.jpg";
-//	vector<bbType> bbs;
-//	double FOV_verticalDeg = 47; // Vertical field-of-view of camera.
-//	double FOV_horizontal = 83; // Horizontal field-of-view of camera.
-//	double angleTiltDegrees = 7; // Downward tilt in degrees.
-//	double cameraHeight = 1.9; // Height Position of camera.
-//
-//	double imageResize = 0.5;
-//	//Mat image = imread(dirImage, 1);
-//
-//	Mat image, inputImage;
-//	struct dirent *ent;
-//	//string dirImages = "/home/pistol/Desktop/DataFolder/2014-11-03-14-37-11/WebCam";
-//	//string dirImages = "/home/pistol/Desktop/DataFolder/2014-10-16-12-18-30/WebCam";
-//	string dirImages = "/home/pistol/Desktop/DataFolder/WebCam";
-//
-//	DIR *dir = opendir(dirImages.data());
-//
-//	char * pch;
-//
-//	//image = imread(dirImage, 1);
-//
-//	//cout << image.cols << "x" << image.rows << endl;
-//
-//	// Making detector object.
-//	bool fastDetector = 1;
-//	string dirFolder = "/home/pistol/ice/src/pedestrian_detector/";
-//	string dirDetector;
-//	if (fastDetector) {
-//		dirDetector = dirFolder + "pedmodels/AcfInriaDetector.mat";
-//	} else {
-//		dirDetector = dirFolder + "pedmodels/LdcfInriaDetector.mat";
-//	}
-//
-//	PedestrianDetector oPedDetector(dirDetector);
-//	// Providing camera settings.
-//	oPedDetector.setCameraSetup(FOV_verticalDeg, FOV_horizontal,
-//			angleTiltDegrees, cameraHeight);
-//
-//	bool useExample = 0;
-//	if (useExample) {
-//		inputImage = imread(dirImage, 1);
-//		if (!inputImage.data) {
-//			printf("No image data \n");
-//			return -1;
-//		}
-//		resize(inputImage, image, Size(), imageResize, imageResize);
-//
-//		clock_t start, end;
-//		start = clock();
-//		bbs = oPedDetector.pedDetector(image);
-//		end = clock();
-//		double time = (double) (end - start) / CLOCKS_PER_SEC * 1000.0;
-//		cout << "\n t1:" << time << " ms\n";
-//
-//		showBB(bbs, image, 0);
-//		waitKey(0);
-//
-//	}
-//	struct dirent **namelist;
-//	int i;
-//	string fileName;
-//	//string pch;
-//	int n = scandir(dirImages.data(), &namelist, 0, alphasort);
-//	if (n < 0)
-//		perror("scandir");
-//	else {
-//		for (i = 0; i < n; i++) {
-//			printf("%s\n", namelist[i]->d_name);
-//
-//			//while ((ent = readdir (dir)) != NULL) {
-//			fileName = namelist[i]->d_name;
-//			string pch = strrchr(namelist[i]->d_name, '.');
-//			free(namelist[i]);
-//			if (pch.compare(".jpg") == 0) {
-//				printf("%s\n", fileName.data());
-//				string dirImage = (dirImages + '/' + fileName);
-//				inputImage = imread(dirImage.data(), 1);
-//				resize(inputImage, image, Size(), imageResize, imageResize);
-//
-//				clock_t start, end;
-//				start = clock();
-//				bbs = oPedDetector.pedDetector(image);
-//				end = clock();
-//				double time = (double) (end - start) / CLOCKS_PER_SEC * 1000.0;
-//				cout << "\n t1:" << time << " ms\n";
-//				cv::Mat img = showBB(bbs, image, 0);
-//				waitKey(10);
-//
-//				sensor_msgs::CameraInfoPtr cc(
-//						new sensor_msgs::CameraInfo(cinfor_->getCameraInfo()));
-//				sensor_msgs::ImagePtr msg = cv_bridge::CvImage(
-//						std_msgs::Header(), "bgr8", img).toImageMsg();
-//				msg->header.stamp = ros::Time::now();
-//
-//				std_msgs::Float64MultiArray bbMsg;
-//				bbMsg.data.clear();
-//				for (int iBbs = 0; iBbs < bbs.size(); ++iBbs) {
-//
-//					bbMsg.data.push_back(bbs[iBbs].distance);
-//					bbMsg.data.push_back(bbs[iBbs].angle);
-//					//bbMsg.data.push_back(bbs[iBbs].)
-//				}
-//
-//				cam_pub.publish(msg, cc);
-//				array_pub.publish(bbMsg);
-//				ros::spinOnce();
-//
-//			}
-//			//closedir (dir);
-//		}
-//	}
-//	free(namelist);
 
 	return 0;
 }

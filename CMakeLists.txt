@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(pedestrian_detector)
+project(pedestrian_detector_ros)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   cv_bridge
   image_transport
+  boundingbox_msgs
   camera_info_manager
 )
 
