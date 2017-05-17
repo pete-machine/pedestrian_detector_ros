@@ -12,13 +12,15 @@
 		<param name="cameraHeight" value="0.27" />
 		<param name="angleTiltDegrees" value="0.0" />
 
-		<param name="topic_name" value="/Multisense/left/image_rect_color" />
+		<param name="topic_image_in" value="/Multisense/left/image_rect_color" />
 		<param name="topic_bbox_out" value="/det/Multisense/ped/BBoxes2d" />
+		<param name="topic_vizualize_image" value="/ped/imageWithBBox" />
+topic_vizualize_image
 	</node>
 
 	<!-- Makes viewing node for showing detected pedestrians. -->
 	<node name="image_view_PedestrianDetection" pkg="image_view" type="image_view" respawn="false" output="screen">
-			<remap from="image" to="/ped/imageWithBBox"/>
-			<param name="autosize" value="false" />
+		<remap from="image" to="/ped/imageWithBBox"/>
+		<param name="autosize" value="false" />
 	</node> 
 </launch>

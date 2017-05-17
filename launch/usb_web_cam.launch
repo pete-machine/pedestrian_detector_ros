@@ -14,7 +14,7 @@
 		<param name="imageResize" value="0.75" />
 		<param name="cameraHeight" value="0.27" />
 		<param name="angleTiltDegrees" value="0.0" />
-		<param name="topic_name" value="/Logitech_webcam/image_raw" />
+		<param name="topic_image_in" value="/Logitech_webcam/image_raw" />
 	</node>
 
 	<!-- Makes viewing node for showing detected pedestrians. -->

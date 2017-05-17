@@ -100,7 +100,7 @@ public:
 		nh.param<double>("angleTiltDegrees",angleTiltDegrees,7.0);
 		nh.param<double>("cameraHeight",cameraHeight,1.9);
 		nh.param<double>("imageResize",imageResize,0.5);
-		nh.param<std::string>("topic_name",topic_name,"/usb_cam/image_raw");
+		nh.param<std::string>("topic_image_in",topic_name,"/usb_cam/image_raw");
 		nh.param<std::string>("topic_bbox_out",topic_bbox_out,"/bboxesOut");
 		nh.param<std::string>("topic_vizualize_image",topic_vizualize_image,"imageWithBBox");
 		nh.param<std::string>("model_dir",model_dir,"model");
