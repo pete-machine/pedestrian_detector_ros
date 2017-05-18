@@ -1,9 +1,5 @@
 <?xml version="1.0"?>
 <launch>	
-	<node name="image_raw_ped" pkg="image_view" type="image_view" respawn="false" output="screen">
-		<remap from="image" to="/Multisense/left/image_rect_color"/>
-		<param name="autosize" value="false" />
-	</node>
 	<!-- Makes pedestrian detector node. Change between the good and the bad detector by changing the model dir. -->
 	<node type="pedestrian_detector_node" name="ped" pkg="pedestrian_detector_ros" respawn="true" output="screen">
 		<param name="model_dir" value="$(find pedestrian_detector_ros)/pedmodels/LdcfInriaDetector.mat" />
@@ -18,9 +14,14 @@
 topic_vizualize_image
 	</node>
 
-	<!-- Makes viewing node for showing detected pedestrians. -->
+<!-- Makes viewing node for showing detected pedestrians. 
+	<node name="image_raw" pkg="image_view" type="image_view" respawn="false" output="screen">
+		<remap from="image" to="/Multisense/left/image_rect_color"/>
+		<param name="autosize" value="false" />
+	</node>
 	<node name="image_view_PedestrianDetection" pkg="image_view" type="image_view" respawn="false" output="screen">
 		<remap from="image" to="/ped/imageWithBBox"/>
 		<param name="autosize" value="false" />
 	</node> 
+-->
 </launch>
