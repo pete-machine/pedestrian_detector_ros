@@ -191,6 +191,7 @@ public:
 			tmpMsgObstacle.h = bbs[iBbs].height4/float(img.rows);
 			tmpMsgObstacle.prob = fmin(bbs[iBbs].score5/200.0,1);
 			tmpMsgObstacle.objectType = int(0); // Humans are given the class 0.
+			tmpMsgObstacle.objectName = "human"; 
 
 			// Append obstacle. 
 			msgObstacles.boundingboxes.push_back(tmpMsgObstacle); 
